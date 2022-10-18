@@ -70,6 +70,12 @@ def main():
     parser.add_argument('--plot', type=str,
                         help='output the statistics to a plot')
 
+    parser.add_argument('--plot-dpi', type=int, default=100,
+                        help='plot DPI (default: %(default)s)')
+
+    parser.add_argument('--plot-size-inches', type=str, default="6.4x4.8",
+                        help='plot size in inches (default: %(default)s)')
+
     parser.add_argument('--duration', type=float,
                         help='how long to record for (in seconds). If not '
                              'specified, the recording is continuous until '
@@ -100,15 +106,16 @@ def main():
         sprocess = subprocess.Popen(command, shell=True)
         pid = sprocess.pid
 
-    monitor(pid, logfile=args.log, plot=args.plot, duration=args.duration,
+    monitor(pid, logfile=args.log, plot=args.plot, plot_dpi=args.plot_dpi,
+            plot_size_inches=args.plot_size_inches, duration=args.duration,
             interval=args.interval, include_children=args.include_children)
 
     if sprocess is not None:
         sprocess.kill()
 
 
-def monitor(pid, logfile=None, plot=None, duration=None, interval=None,
-            include_children=False):
+def monitor(pid, logfile=None, plot=None, plot_dpi=None, plot_size_inches=None,
+            duration=None, interval=None, include_children=False):
 
     # We import psutil here so that the module can be imported even if psutil
     # is not present (for example if accessing the version)
@@ -226,5 +233,12 @@ def monitor(pid, logfile=None, plot=None, duration=None, interval=None,
             ax2.set_ylabel('Real Memory (MB)', color='b')
 
             ax.grid()
+
+            if plot_dpi is not None:
+                fig.set_dpi(plot_dpi)
+
+            if plot_size_inches is not None:
+                width_str, height_str = plot_size_inches.split("x")
+                fig.set_size_inches(float(width_str), float(height_str))
 
             fig.savefig(plot)
